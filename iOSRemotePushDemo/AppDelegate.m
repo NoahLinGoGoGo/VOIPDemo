@@ -13,6 +13,8 @@
 
 @interface AppDelegate ()
 
+@property (strong, nonatomic) AVAudioPlayer *audioPlayer;
+
 @end
 
 @implementation AppDelegate
@@ -20,12 +22,12 @@
     NSLog(@"%s: %@", __FUNCTION__, launchOptions);
     [self voipRegistration];
     [self localPushRegistration];
-
+    
     if (launchOptions[UIApplicationLaunchOptionsLocalNotificationKey]) {
         // 这里添加本地通知处理代码，程序被杀死，点击通知后调用此程序
         
     }
-
+    
     return YES;
 }
 
@@ -48,8 +50,8 @@
                         stringByReplacingOccurrencesOfString:@">" withString:@""]
                        stringByReplacingOccurrencesOfString:@" " withString:@""];
     NSLog(@"%s: %@  %@  token:%@", __FUNCTION__, credentials.token,type,token);
-   
-   
+    
+    
 }
 
 // Handle incoming pushes
@@ -62,25 +64,25 @@
         case UIApplicationStateActive: {
             isActive = true;
         }
-        break;
+            break;
         case UIApplicationStateInactive: {
             isActive = true;
         }
-        break;
+            break;
         case UIApplicationStateBackground: {
             isActive = false;
         }
-        break;
+            break;
         default:
-        isActive = false;
-        break;
+            isActive = false;
+            break;
     }
     
     if (!isActive){
         // local push
         [self sendLocalPush];
     }
-
+    
     if (@available(iOS 10.0, *)) {
         [self playOnOnlineAudioWithUrlStr:voiceUrl];
     }
@@ -104,24 +106,24 @@
     if (@available(iOS 10.0, *)) {
         // 1.创建通知内容
         UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-//        [content setValue:@(YES) forKeyPath:@"shouldAlwaysAlertWhileAppIsForeground"];
+        //        [content setValue:@(YES) forKeyPath:@"shouldAlwaysAlertWhileAppIsForeground"];
         content.sound = [UNNotificationSound defaultSound];
         content.title = title;
         content.body = body;
         
         
         // 2.设置通知附件内容
-//        NSError *error = nil;
-//        NSString *path = [[NSBundle mainBundle] pathForResource:@"Icon-60@1x-1" ofType:@"png"];
-//        UNNotificationAttachment *att = [UNNotificationAttachment attachmentWithIdentifier:@"att1" URL:[NSURL fileURLWithPath:path] options:nil error:&error];
-//        if (error) {
-//            NSLog(@"attachment error %@", error);
-//        }
-//        content.attachments = @[att];
+        //        NSError *error = nil;
+        //        NSString *path = [[NSBundle mainBundle] pathForResource:@"Icon-60@1x-1" ofType:@"png"];
+        //        UNNotificationAttachment *att = [UNNotificationAttachment attachmentWithIdentifier:@"att1" URL:[NSURL fileURLWithPath:path] options:nil error:&error];
+        //        if (error) {
+        //            NSLog(@"attachment error %@", error);
+        //        }
+        //        content.attachments = @[att];
         content.launchImageName = @"LaunchImage";
         // 2.设置声音
-//        UNNotificationSound *sound = [UNNotificationSound soundNamed:@"sound01.wav"];// [UNNotificationSound defaultSound];
-//        content.sound = sound;
+        //        UNNotificationSound *sound = [UNNotificationSound soundNamed:@"sound01.wav"];// [UNNotificationSound defaultSound];
+        //        content.sound = sound;
         
         // 3.触发模式
         UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.01 repeats:NO];
@@ -150,7 +152,7 @@
         
         
         // 4.在规定的日期触发通知
-//        [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
+        //        [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
         // 4.立即触发一个通知
         [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
     }
@@ -163,16 +165,20 @@
 
 #pragma mark -
 - (void)playOnOnlineAudioWithUrlStr:(NSString *)urlStr {
-    //    NSError *error;
-    //    [[AVAudioSession sharedInstance]setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionDuckOthers error:&error];
-    //    if (error) {
-    //        NSLog(@"%s  %@",__FUNCTION__,error.localizedDescription);
-    //    }
+    NSError *error;
+    [[AVAudioSession sharedInstance]setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionDuckOthers error:&error];
+    if (error) {
+        NSLog(@"%s  %@",__FUNCTION__,error.localizedDescription);
+    }
     
+    // 播放合成声音，这里用一段音频代替
+    NSString *soundPath = [[NSBundle mainBundle]pathForResource:@"weixindaozhang" ofType:@"wav"];
+    NSURL *soundUrl = [NSURL fileURLWithPath:soundPath];
+    self.audioPlayer = [[AVAudioPlayer alloc]initWithContentsOfURL:soundUrl error:nil];
+    //设置声音的大小
+    self.audioPlayer.volume = 0.5;//范围为（0到1）；
+    [self.audioPlayer prepareToPlay];
+    [self.audioPlayer play];
     
-    //    AVPlayer * player = [[AVPlayer alloc] initWithPlayerItem:[[AVPlayerItem alloc]initWithURL:[NSURL URLWithString:@"https://github.com/linshengqi/MarkdownPhotos/blob/master/audio/weixindaozhang.wav"]]];
-    //    [player play];
-    //
-
 }
 @end
